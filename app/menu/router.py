@@ -1,3 +1,4 @@
+from uuid import uuid4
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 
@@ -10,8 +11,8 @@ from collections.abc import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
-    prefix="/menus",
-    tags=["Меню"],
+    prefix="/api/v1/menus",
+    tags=["Menus"],
 )
 
 
@@ -21,7 +22,7 @@ async def get_menus():
 
 
 @router.get("/{id}", response_model=SchemaMenu)  
-async def get_single_menu(id: int):
+async def get_single_menu(id: str):
     single_menu = await MenuDAO.find_by_id(id)
     if not single_menu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -36,8 +37,9 @@ async def create_menu(menu: SchemaCreateMenu):
     return new_menu
 
 
+
 @router.delete("/{id}")
-async def delete_single_menu(id: int):
+async def delete_single_menu(id: str):
     menu_to_delete = await MenuDAO.find_by_id(id)
     if not menu_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -47,14 +49,10 @@ async def delete_single_menu(id: int):
     return {"status": True, "message": "The menu has been deleted"}
 
 
-@router.put("/{id}", response_model=SchemaMenu)
-async def update_menu(id: int, menu_scheme: SchemaUpdateMenu):
-    menu_to_update = await MenuDAO.find_by_id(id)  
-    if not menu_to_update:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="menu not found"
-                            )
-    updated_menu = await MenuDAO.update_object(menu_to_update, menu_scheme)
+@router.patch("/{id}", response_model=SchemaMenu)
+async def update_menu(id: str, menu_scheme: SchemaUpdateMenu):
+    updated_menu = await MenuDAO.update_object(id, menu_scheme)  
+
     return updated_menu
 
 

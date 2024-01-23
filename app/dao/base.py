@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from app.database import async_session_maker
 from sqlalchemy import select, insert
 from fastapi.exceptions import ResponseValidationError
@@ -9,7 +10,7 @@ class BaseDAO:
     model = None
 
     @classmethod
-    async def find_by_id(cls, model_id: int):
+    async def find_by_id(cls, model_id: str):
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(id=model_id)
             result = await session.execute(query)
@@ -17,16 +18,19 @@ class BaseDAO:
         
 
     @classmethod
-    async def update_object(cls, object, object_update_scheme):
+    async def update_object(cls, object_id: str, object_update_scheme):
         async with async_session_maker() as session:
-            object_data = object_update_scheme.dict(exclude_unset=True)
-        
-            for key, value in object_data.items():
-                setattr(object, key, value)
-           
+            object_upd = await session.get(cls.model, object_id)
+            if not object_upd:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="object not found"
+                            )
+            menu_data = object_update_scheme.dict(exclude_unset=True)
+            for key, value in menu_data.items():
+                setattr(object_upd, key, value)
             await session.commit()
-            await session.refresh(object)
-            return object
+            await session.refresh(object_upd)
+            return object_upd
 
 
     @classmethod
@@ -34,8 +38,12 @@ class BaseDAO:
         async with async_session_maker() as session:
             query = select(cls.model)
             result = await session.execute(query)
-            return result.scalars().all()
-        
+            object_list = result.scalars().all()
+            # if object_list == []:
+            #     return  { "detail": 'Not Found' } 
+            # else:
+            #     return object_list
+            return object_list
     
     @classmethod
     async def add(cls, object):

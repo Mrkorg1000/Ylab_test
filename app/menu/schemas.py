@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import UUID4, BaseModel, ConfigDict
 
 
 class SchemaMenuBase(BaseModel):
@@ -10,9 +10,13 @@ class SchemaMenuBase(BaseModel):
         orm_mode = True
 
 
+
 class SchemaMenu(SchemaMenuBase):
+    id: UUID4
     submenus_count: int
     dishes_count: int
+
+   
 
 class SchemaCreateMenu(SchemaMenuBase):
     pass 

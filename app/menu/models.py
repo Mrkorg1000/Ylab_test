@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, func, select
+from sqlalchemy import Column, Integer, String, func, select, UUID
 from sqlalchemy.orm import MapperProperty, column_property, relationship
 from app.database import Base
 from app.dish.models import Dish
 from app.submenu.models import Submenu
+import uuid
 
 
 
@@ -10,7 +11,7 @@ class Menu(Base):
     __tablename__ = 'menus'
     __allow_unmapped__ = True
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(UUID, primary_key=True, default=uuid.uuid4)
     title = Column(String(200), unique=True)
     description = Column(String(1000))
     submenus = relationship(
