@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import uuid4, UUID
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 
@@ -22,7 +22,7 @@ async def get_menus():
 
 
 @router.get("/{id}", response_model=SchemaMenu)  
-async def get_single_menu(id: str):
+async def get_single_menu(id: UUID):
     single_menu = await MenuDAO.find_by_id(id)
     if not single_menu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -39,7 +39,7 @@ async def create_menu(menu: SchemaCreateMenu):
 
 
 @router.delete("/{id}")
-async def delete_single_menu(id: str):
+async def delete_single_menu(id: UUID):
     menu_to_delete = await MenuDAO.find_by_id(id)
     if not menu_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -50,7 +50,7 @@ async def delete_single_menu(id: str):
 
 
 @router.patch("/{id}", response_model=SchemaMenu)
-async def update_menu(id: str, menu_scheme: SchemaUpdateMenu):
+async def update_menu(id: UUID, menu_scheme: SchemaUpdateMenu):
     updated_menu = await MenuDAO.update_object(id, menu_scheme)  
 
     return updated_menu

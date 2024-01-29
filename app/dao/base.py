@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import HTTPException, status
 from app.database import async_session_maker
 from sqlalchemy import select, insert
@@ -10,7 +11,7 @@ class BaseDAO:
     model = None
 
     @classmethod
-    async def find_by_id(cls, model_id: str):
+    async def find_by_id(cls, model_id: UUID):
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(id=model_id)
             result = await session.execute(query)
@@ -18,7 +19,7 @@ class BaseDAO:
         
 
     @classmethod
-    async def update_object(cls, object_id: str, object_update_scheme):
+    async def update_object(cls, object_id: UUID, object_update_scheme):
         async with async_session_maker() as session:
             object_upd = await session.get(cls.model, object_id)
             if not object_upd:

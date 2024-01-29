@@ -1,16 +1,16 @@
 from pydantic import UUID4, BaseModel
-
+from uuid import UUID
 
 class SchemaDishBase(BaseModel):
     title: str
     description: str
 
-    class Config:
+    class ConfigDict:
         orm_mode = True
 
 
 class SchemaDish(SchemaDishBase):
-    id: UUID4
+    id: UUID
     price: str
 
 

@@ -34,8 +34,21 @@
 
 Для поднятия Базы Данных и Adminer - `docker-compose up`       
 
-Затем необходимо запустить команду `uvicorn app.main:app --reload` для запуска сервера `uvicorn`. 
+Затем необходимо запустить команду `uvicorn main:app --reload` для запуска сервера `uvicorn`. 
 
 Для создания таблиц в БД - `alembic upgrade head` 
 
 После этого можно зайти в браузере по адресу `http://localhost:8000/docs` для просмотра доступных эндпоинтов.
+
+
+## Тестирование
+
+Для локального тестрования эндпойнтов необходимо запускать по-модульно из корневой дирректории проекта:
+
+`pytest tests/test_menu.py -vv`  -   Тестирование эндпойнтов по Меню
+
+`pytest tests/test_submenu.py -vv`  -   Тестирование эндпойнтов по Подменю
+
+`pytest tests/test_dish.py -vv`  -   Тестирование эндпойнтов по Блюдам
+
+`pytest tests/test_submenu_and_dish_count_in_menu.py -vv`  -  Проверка кол-ва блюд и подменю в меню

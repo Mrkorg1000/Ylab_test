@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
+from uuid import UUID
 
 from sqlalchemy import select
 from app.submenu.dao import SubmenuDAO
@@ -22,7 +23,7 @@ async def get_submenus():
 
 
 @router.get("/{id}", response_model=SchemaSubmenu)  
-async def get_single_submenu(id: str):
+async def get_single_submenu(id: UUID):
     single_submenu = await SubmenuDAO.find_by_id(id)
     if not single_submenu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -32,7 +33,7 @@ async def get_single_submenu(id: str):
 
 
 @router.post("", response_model=SchemaSubmenu, status_code=status.HTTP_201_CREATED)
-async def create_submenu(menu_id: str, submenu: SchemaCreateUpdateSubmenu):
+async def create_submenu(menu_id: UUID, submenu: SchemaCreateUpdateSubmenu):
     async with async_session_maker() as session:
         new_submenu = Submenu(
             title=submenu.title,
@@ -47,7 +48,7 @@ async def create_submenu(menu_id: str, submenu: SchemaCreateUpdateSubmenu):
 
 
 @router.delete("/{id}")
-async def delete_single_submenu(id: str):
+async def delete_single_submenu(id: UUID):
     submenu_to_delete = await SubmenuDAO.find_by_id(id)
     if not submenu_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -58,7 +59,7 @@ async def delete_single_submenu(id: str):
 
 
 @router.patch("/{id}", response_model=SchemaSubmenu)
-async def update_submenu(id: str, submenu_scheme: SchemaCreateUpdateSubmenu):
+async def update_submenu(id: UUID, submenu_scheme: SchemaCreateUpdateSubmenu):
     updated_submenu = await SubmenuDAO.update_object(id, submenu_scheme)  
 
     return updated_submenu

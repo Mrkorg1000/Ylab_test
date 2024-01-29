@@ -1,18 +1,18 @@
 from typing import Optional
 from pydantic import UUID4, BaseModel, ConfigDict
-
+from uuid import UUID
 
 class SchemaMenuBase(BaseModel):
     title: str
     description: str
 
-    class Config:
+    class ConfigDict:
         orm_mode = True
 
 
 
 class SchemaMenu(SchemaMenuBase):
-    id: UUID4
+    id: UUID
     submenus_count: int
     dishes_count: int
 
