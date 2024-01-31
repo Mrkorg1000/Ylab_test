@@ -15,7 +15,7 @@ from app.dish.models import Dish
 
 DATABASE_URL_TEST = f"postgresql+asyncpg://{settings.TEST_DB_USER}:{settings.TEST_DB_PASS}@{settings.TEST_DB_HOST}:{settings.TEST_DB_PORT}/{settings.TEST_DB_NAME}"
 
-engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)
+engine_test = create_async_engine(DATABASE_URL, poolclass=NullPool)
 
 async_session_maker_test = sessionmaker(bind=engine_test, class_=AsyncSession, expire_on_commit=False)
     
