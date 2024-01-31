@@ -40,10 +40,6 @@ class BaseDAO:
             query = select(cls.model)
             result = await session.execute(query)
             object_list = result.scalars().all()
-            # if object_list == []:
-            #     return  { "detail": 'Not Found' } 
-            # else:
-            #     return object_list
             return object_list
     
     @classmethod

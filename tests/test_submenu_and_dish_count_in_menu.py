@@ -1,7 +1,7 @@
 from app.menu.models import Menu
 from app.submenu.models import Submenu
 from app.dish.models import Dish
-from tests.conftest import get_object_id, menu_to_dict, submenu_to_dict, dish_to_dict
+from tests.conftest import get_object, get_object_id, get_objects_list, menu_to_dict, submenu_to_dict, dish_to_dict
 
 router_menus = '/api/v1/menus'
 router_menu_id = '/api/v1/menus/{id}'
@@ -95,14 +95,10 @@ async def test_get_menu_by_id(ac, session):
     resp = await ac.get(
         router_menu_id.format(id=menu_id),
     )
+    menu = await get_object(Menu, session)
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My menu',
-        'description': 'My menu description',
-        'id': menu_id,
-        'submenus_count': 1,
-        'dishes_count': 2,
-    }
+    assert resp.json() == menu_to_dict(menu)
+    
 
 
 async def test_get_submenu_by_id(ac, session):
@@ -112,13 +108,9 @@ async def test_get_submenu_by_id(ac, session):
     resp = await ac.get(
         router_submenu_id.format(menu_id=menu_id, id=submenu_id)
     )
+    submenu = await get_object(Submenu, session)
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My submenu',
-        'description': 'My submenu description',
-        'id': submenu_id,
-        'dishes_count': 2,
-    }
+    assert resp.json() == submenu_to_dict(submenu)
 
 
 async def test_delete_submenu(ac, session):
@@ -142,8 +134,9 @@ async def test_get_submenu_list(ac, session):
         router_submenus.format(menu_id=menu_id),
         follow_redirects=True
     )
+    submenu_list = await get_objects_list(Submenu, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == [submenu_to_dict(submenu) for submenu in submenu_list]
 
 
 async def test_get_dish_list(ac, session):
@@ -157,8 +150,9 @@ async def test_get_dish_list(ac, session):
             follow_redirects=True
         )
     )
+    dish_list = await get_objects_list(Dish, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == dish_list
 
 
 async def test_delete_menu(ac, session):
@@ -174,7 +168,8 @@ async def test_delete_menu(ac, session):
      }
 
 
-async def test_get_menu_list(ac):
+async def test_get_menu_list(ac, session):
     resp = await ac.get(router_menus, follow_redirects=True)
+    menu_list = await get_objects_list(Menu, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == menu_list

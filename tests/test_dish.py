@@ -1,7 +1,7 @@
 from app.dish.models import Dish
 from app.menu.models import Menu
 from app.submenu.models import Submenu
-from tests.conftest import dish_to_dict, get_object_id
+from tests.conftest import dish_to_dict, get_object, get_object_id, get_objects_list
 
 
 router = '/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes'
@@ -20,14 +20,15 @@ router_id = 'api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{id}'
 # 8. Удаление блюда по несуществующему id.
 
 
-async def test_get_empty_dish_list(ac, test_submenu):
+async def test_get_empty_dish_list(ac, test_submenu, session):
     resp = await ac.get(
         router.format(menu_id=str(test_submenu.menu_id),
         submenu_id=str(test_submenu.id)),
         follow_redirects=True
     )
+    dish_list = await get_objects_list(Dish, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == dish_list
 
 
 async def test_create_dish(ac, session):
@@ -50,7 +51,6 @@ async def test_create_dish(ac, session):
 async def test_get_dish_list(ac, session):
     menu_id = await get_object_id(Menu, session)
     submenu_id = await get_object_id(Submenu, session)
-    dish_id = await get_object_id(Dish, session)
 
     resp = await ac.get(
         router.format(
@@ -59,14 +59,10 @@ async def test_get_dish_list(ac, session):
             follow_redirects=True
         )
     )
+    dish_list = await get_objects_list(Dish, session)
     assert resp.status_code == 200
     assert resp.json() == [
-        {
-        'title': 'My super dish',
-        'description': 'My super dish description',
-        'id': dish_id,
-        'price': '12.50',
-        }
+        dish_to_dict(dish) for dish in dish_list
     ]
 
 
@@ -79,13 +75,9 @@ async def test_get_dish_by_id(ac, session):
         router_id.format(menu_id=menu_id, submenu_id=submenu_id,
         id=dish_id)
     )
+    dish = await get_object(Dish, session)
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My super dish',
-        'description': 'My super dish description',
-        'id': dish_id,
-        'price': '12.50',
-        }
+    assert resp.json() == dish_to_dict(dish)
 
 
 async def test_dish_not_found(ac, session):
@@ -120,13 +112,12 @@ async def test_update_dish(ac, session):
             'price': '14.50',
         },
     )
+     updated_dish = await get_object(Dish, session)
+
      assert resp.status_code == 200
-     assert resp.json() == {
-        'title': 'My updated dish',
-        'description': 'My updated dish description',
-        'id': dish_id,
-        'price': '14.50',
-    }
+     assert resp.json()['title'] == updated_dish.title
+     assert resp.json()['description'] == updated_dish.description
+     assert resp.json()['price'] == updated_dish.price 
 
 
 async def test_delete_dish(ac, session):

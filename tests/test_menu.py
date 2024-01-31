@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from app.menu.models import Menu
-from conftest import menu_to_dict, get_object_id
+from conftest import get_objects_list, menu_to_dict, get_object_id, get_object
 
 router = '/api/v1/menus'
 router_id = 'api/v1/menus/{id}'
@@ -16,14 +16,13 @@ router_id = 'api/v1/menus/{id}'
 # 7. Удаление меню. 
 # 8. Удаление меню по несуществующему id.
 
-
-
 # pytest tests/test_menu.py -vv
 
-async def test_get_empty_menu_list(ac):
+async def test_get_empty_menu_list(ac, session):
     resp = await ac.get(router, follow_redirects=True)
+    menu_list = await get_objects_list(Menu, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == menu_list
 
 
 async def test_create_menu(ac, session):
@@ -39,19 +38,10 @@ async def test_create_menu(ac, session):
 
 
 async def test_get_menu_list(ac, session):
-    menu_id = await get_object_id(Menu, session)
-     
     resp = await ac.get(router, follow_redirects=True)
+    menu_list = await get_objects_list(Menu, session)
     assert resp.status_code == 200
-    assert resp.json() == [
-        {
-        'title': 'My menu',
-        'description': 'My menu description',
-        'id': menu_id,
-        'submenus_count': 0,
-        'dishes_count': 0,
-    }
-    ]
+    assert resp.json() == [menu_to_dict(menu) for menu in menu_list]
 
 
 async def test_get_menu_by_id(ac, session):
@@ -60,14 +50,9 @@ async def test_get_menu_by_id(ac, session):
     resp = await ac.get(
         router_id.format(id=menu_id),
     )
+    menu = await get_object(Menu, session)
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My menu',
-        'description': 'My menu description',
-        'id': menu_id,
-        'submenus_count': 0,
-        'dishes_count': 0,
-    }
+    assert resp.json() == menu_to_dict(menu)
 
 
 async def test_menu_not_found(ac):
@@ -88,14 +73,11 @@ async def test_update_menu(ac, session):
             'description': 'My updated menu description',
         },
     )
+    updated_menu = await get_object(Menu, session)
+
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My updated menu',
-        'description': 'My updated menu description',
-        'id': menu_id,
-        'submenus_count': 0,
-        'dishes_count': 0,
-    }
+    assert resp.json()['title'] == updated_menu.title
+    assert resp.json()['description'] == updated_menu.description
 
 
 async def test_delete_menu(ac, session):

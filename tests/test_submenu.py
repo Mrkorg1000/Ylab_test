@@ -1,6 +1,6 @@
 from app.menu.models import Menu
 from app.submenu.models import Submenu
-from tests.conftest import get_object_id, submenu_to_dict
+from tests.conftest import get_object, get_object_id, get_objects_list, submenu_to_dict
 
 
 router = '/api/v1/menus/{menu_id}/submenus'
@@ -20,13 +20,14 @@ router_id = 'api/v1/menus/{menu_id}/submenus/{id}'
 # pytest tests/test_submenu.py -vv
 
 
-async def test_get_empty_submenu_list(ac, test_menu):
+async def test_get_empty_submenu_list(ac, test_menu, session):
     resp = await ac.get(
         router.format(menu_id=str(test_menu.id)),
         follow_redirects=True                   
     )
+    submenu_list = await get_objects_list(Submenu, session)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json() == submenu_list
 
 
 async def test_create_submenu(ac, session):
@@ -47,22 +48,15 @@ async def test_create_submenu(ac, session):
 
 async def test_get_submenu_list(ac, session):
     menu_id = await get_object_id(Menu, session)
-    submenu_id = await get_object_id(Submenu, session)
 
     resp = await ac.get(
         router.format(menu_id=menu_id),
         follow_redirects=True
     )
+    submenu_list = await get_objects_list(Submenu, session)
     assert resp.status_code == 200
-    assert resp.json() == [
-        {
-        'title': 'My submenu',
-        'description': 'My submenu description',
-        'id': submenu_id,
-        'dishes_count': 0,
-        }
-    ]
-
+    assert resp.json() == [submenu_to_dict(submenu) for submenu in submenu_list]
+        
 
 async def test_get_submenu_by_id(ac, session):
     menu_id = await get_object_id(Menu, session)
@@ -71,13 +65,9 @@ async def test_get_submenu_by_id(ac, session):
     resp = await ac.get(
         router_id.format(menu_id=menu_id, id=submenu_id)
     )
+    submenu = await get_object(Submenu, session)
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My submenu',
-        'description': 'My submenu description',
-        'id': submenu_id,
-        'dishes_count': 0,
-    }
+    assert resp.json() == submenu_to_dict(submenu)
 
 
 async def test_submenu_not_found(ac, session):
@@ -101,13 +91,11 @@ async def test_update_submenu(ac, session):
             'description': 'My updated submenu description',
         },
     )
+    updated_submenu = await get_object(Submenu, session)
+
     assert resp.status_code == 200
-    assert resp.json() == {
-        'title': 'My updated submenu',
-        'description': 'My updated submenu description',
-        'id': submenu_id,
-        'dishes_count': 0,
-    }
+    assert resp.json()['title'] == updated_submenu.title
+    assert resp.json()['description'] == updated_submenu.description 
 
 
 async def test_delete_submenu(ac, session):

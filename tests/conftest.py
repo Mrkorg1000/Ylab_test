@@ -119,6 +119,23 @@ def dish_to_dict(dish: Dish):
         'price': str(dish.price),
     }
 
+
+async def get_objects_list(obj_cls, session):
+    query = select(obj_cls)
+    result = await session.execute(query)
+    objects_list = result.scalars().all()
+    return objects_list
+
+
+async def get_object(obj_cls, session):
+    query = select(obj_cls)
+    result = await session.execute(query)
+    object = result.scalar_one_or_none()
+    if object:
+        return object
+
+    
+
 async def get_object_id(obj_cls, session):
     query = select(obj_cls)
     result = await session.execute(query)
