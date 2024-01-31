@@ -39,6 +39,8 @@ services:
     env_file:
       - .env
     
+    command: "pytest tests/test_submenu_and_dish_count_in_menu.py -vv"
+    
     ports:
       - 9999:8000
     depends_on:
